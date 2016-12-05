@@ -19,9 +19,9 @@ class StanfordSentiment:
     def tokens(self):
         if hasattr(self, "_tokens") and self._tokens:
             return self._tokens
-        '''with open(self.path+ "/tokensTable", "r") as TableFile:
+        with open(self.path+ "/tokensTable", "r") as TableFile:
             self._tokens = pickle.load(TableFile)
-            return self._tokens'''
+            return self._tokens
         tokens = dict()
         tokenfreq = dict()
         wordcount = 0
@@ -274,7 +274,7 @@ class StanfordSentiment:
             pickle.dump(self._sampleTable, TableFile)
         return self._sampleTable
 
-    def rejectProb(self):
+    def rejectProb(self):#TODO
         if hasattr(self, '_rejectProb') and self._rejectProb is not None:
             return self._rejectProb
 

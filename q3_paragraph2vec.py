@@ -33,9 +33,9 @@ def negSamplingCostAndGradient(predicted, target, outputVectors, dataset, prev_i
     negative_set = negative_set.difference(prev_idx)
     negative_idx = list(negative_set)
     
-    s = outputVectors.shape[1]
+    #s = outputVectors.shape[1]
     if not(negative_idx):
-        Z = np.zeros((s, 1))
+        #Z = np.zeros((s, 1))
         return None
         return 0, 0, Z, Z.T, [], Z.T, Z.T, []
     prev_idx += negative_idx
@@ -51,13 +51,14 @@ def negSamplingCostAndGradient(predicted, target, outputVectors, dataset, prev_i
     sig_n = sigmoid(np.dot(U, predicted))
 
     h =  sig_n * U.T
-    n =  -np.log(1 - sig_n)
+    #n =  -np.log(1 - sig_n)
 
-    cost = list(n)
+    #cost = list(n)
+    #-np.log(sig)
 
     grad =  sig_n[:, np.newaxis] * predicted
     
-    return cost, -np.log(sig), h, g * target_vector.T, negative_idx, grad, g * predicted, [target]
+    return [], 0, h, g * target_vector.T, negative_idx, grad, g * predicted, [target]
 
 
 def skipgram(p_id, C, contextWords, tokens, inputVectors, outputVectors, prev_idx,
@@ -73,11 +74,9 @@ def skipgram(p_id, C, contextWords, tokens, inputVectors, outputVectors, prev_id
     p_list = map((lambda x: word2vecCostAndGradient(predicted, tokens[x], outputVectors, dataset, prev_idx)), contextWords)
     p_list = [p for p in p_list if p != None]
 
-    cost = 0
-
     k = 0
-    cost_stack = np.array([])
-    cost_target = 0
+    #cost_stack = np.array([])
+    #cost_target = 0
     gradIn_stack = np.array([])
     arr_neg_idx = np.array([])
     gradOut_stack = np.array([])
@@ -86,14 +85,14 @@ def skipgram(p_id, C, contextWords, tokens, inputVectors, outputVectors, prev_id
     target_indices = []
     for x in zip(*p_list):
 
-        if (k == 0):
+        '''if (k == 0):
             list_x = []
             for w in x:
                 if (w):
                     list_x += w
             cost_stack = np.asarray(list_x)
         if (k == 1):
-            cost_target = sum(x) 
+            cost_target = sum(x) '''
         if (k == 2):
             gradIn_stack = np.concatenate([j for j in x if np.sum(j)], axis = 1)
         if (k == 3):
@@ -115,15 +114,15 @@ def skipgram(p_id, C, contextWords, tokens, inputVectors, outputVectors, prev_id
             break
         k += 1
     
-    return cost_stack, cost_target, target_indices, gradIn_stack, gradIn_target_stack, arr_neg_idx, gradOut_stack, gradOut_target_stack
+    #return cost_stack, cost_target, target_indices, gradIn_stack, gradIn_target_stack, arr_neg_idx, gradOut_stack, gradOut_target_stack
+    return target_indices, gradIn_stack, gradIn_target_stack, arr_neg_idx, gradOut_stack, gradOut_target_stack
 
-def word2vec_sgd_wrapper(word2vecModel, tokens, wordVectors, dataset, C, it, word2vecCostAndGradient = negSamplingCostAndGradient):   
+def word2vec_sgd_wrapper(word2vecModel, tokens, wordVectors, dataset, C, it, nParagraphs, word2vecCostAndGradient = negSamplingCostAndGradient):   
     prev_idx = []
     batchsize = 50
-    cost = 0.0
-    N = wordVectors.shape[0]
-    inputVectors = wordVectors[:N/2,:]
-    outputVectors = wordVectors[N/2:,:]
+    #cost = 0.0
+    inputVectors = wordVectors[:nParagraphs,:]
+    outputVectors = wordVectors[nParagraphs:,:]
     #grad = np.zeros(wordVectors.shape)
     count = 0
     first = True
@@ -139,14 +138,12 @@ def word2vec_sgd_wrapper(word2vecModel, tokens, wordVectors, dataset, C, it, wor
         denom = 1
         p_id, context = i
         #t = tokens[centerword]
-        c, c_target, idx_in, gin, gin_target, idx_out, gout, gout_target = word2vecModel(p_id, C1, context, tokens, inputVectors, outputVectors, prev_idx, dataset, word2vecCostAndGradient)
+        idx_in, gin, gin_target, idx_out, gout, gout_target = word2vecModel(p_id, C1, context, tokens, inputVectors, outputVectors, prev_idx, dataset, word2vecCostAndGradient)
+        #c, c_target, idx_in, gin, gin_target, idx_out, gout, gout_target = word2vecModel(p_id, C1, context, tokens, inputVectors, outputVectors, prev_idx, dataset, word2vecCostAndGradient)
         count += 1
         if (count < batchsize):
             if ((len(idx_in)) and (len(idx_out))):
-                cost += (sum(c) + c_target) / batchsize / denom
-                print cost
-                print p_id
-                print inputVectors[p_id]
+                #cost += (sum(c) + c_target) / batchsize / denom
                 if (first):
                     first = False
                     I_in = idx_in
@@ -175,8 +172,10 @@ def word2vec_sgd_wrapper(word2vecModel, tokens, wordVectors, dataset, C, it, wor
             else:
                 continue
         else:
+            return I_in, GradIn, I_out, GradOut, GradOut_target, T
             return cost, I_in, GradIn, I_out, GradOut, GradOut_target, T   
             #return cost, grad
+    return I_in, GradIn, I_out, GradOut, GradOut_target, T
     return cost, I_in, GradIn, I_out, GradOut, GradOut_target, T
     #return cost, grad
 
