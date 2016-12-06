@@ -172,11 +172,11 @@ def word2vec_sgd_wrapper(word2vecModel, tokens, wordVectors, dataset, C, it, nPa
             else:
                 continue
         else:
-            return I_in, GradIn, I_out, GradOut, GradOut_target, T
-            return cost, I_in, GradIn, I_out, GradOut, GradOut_target, T   
+            return I_in, GradIn, I_out, GradOut, GradOut_target, T, False
+            return cost, I_in, GradIn, I_out, GradOut, GradOut_target, T, False   
             #return cost, grad
-    return I_in, GradIn, I_out, GradOut, GradOut_target, T
-    return cost, I_in, GradIn, I_out, GradOut, GradOut_target, T
+    return I_in, GradIn, I_out, GradOut, GradOut_target, T, True
+    return cost, I_in, GradIn, I_out, GradOut, GradOut_target, T, True
     #return cost, grad
 
 if __name__ == "__main__":

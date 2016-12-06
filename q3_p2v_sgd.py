@@ -70,13 +70,17 @@ def sgd(f, x0, N, step, iterations, postprocessing = None, useSaved = False, PRI
     
     expcost = None
     
-    for iter_ in xrange(start_iter + 1, iterations + 1):
+    #for iter_ in xrange(start_iter + 1, iterations + 1):
+    iter_ = 0
+    while True:
         ### Don't forget to apply the postprocessing after every iteration!
         ### You might want to print the progress every few iterations.
         #count = 0
         ### YOUR CODE HERE
         #cost, idx_in, gin, idx_out, gout, gout_target, T = f(x)
-        idx_in, gin, idx_out, gout, gout_target, T = f(x)
+        idx_in, gin, idx_out, gout, gout_target, T, finished = f(x)
+        if finished:
+            return x
         if (len(idx_in)) and (len(idx_out)):
             '''u, indices = np.unique(idx_out, return_index=True)
             t_v = np.in1d(u, idx_in)
@@ -116,12 +120,13 @@ def sgd(f, x0, N, step, iterations, postprocessing = None, useSaved = False, PRI
                 else:
                     expcost = .95 * expcost + .05 * cost
                 print "iter %d: %f" % (iter_, expcost)'''
-
+            iter_ += 1
             if iter_ % SAVE_PARAMS_EVERY == 0 and useSaved:
                 save_params(iter_, x)
                 
             if iter_ % ANNEAL_EVERY == 0:
                 step *= 0.5
+            
     print x.shape
     return x
 
