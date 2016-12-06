@@ -26,7 +26,7 @@ def negSamplingCostAndGradient(predicted, target, outputVectors, dataset, prev_i
     # assignment!
     
     ### YOUR CODE HERE
-    K = 10
+    K = 25
     neg_idx = [dataset.sampleTokenIdx() for k in range(K)]
     negative_set = set(neg_idx)
     negative_set.discard(target)

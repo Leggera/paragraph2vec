@@ -21,7 +21,13 @@ class StanfordSentiment:
             return self._tokens
         with open(self.path+ "/tokensTable", "r") as TableFile:
             self._tokens = pickle.load(TableFile)
-            return self._tokens
+        with open(self.path+'/tokensFreqTable', 'r') as TableFile:
+            self._tokenfreq = pickle.load(TableFile)
+        with open(self.path+'/wordCountTable', 'r') as TableFile:
+            self._wordcount = pickle.load(TableFile)
+        with open(self.path+'/revtokensTable', 'r') as TableFile:
+            self._revtokens = pickle.load(TableFile)
+        return self._tokens
         tokens = dict()
         tokenfreq = dict()
         wordcount = 0
@@ -55,6 +61,13 @@ class StanfordSentiment:
             print len(tokens)
             print wordcount
             pickle.dump(self._tokens, TableFile)
+        with open(self.path+'/tokensFreqTable', 'w') as TableFile:
+            pickle.dump(self._tokenfreq, TableFile)
+        with open(self.path+'/wordCountTable', 'w') as TableFile:
+            pickle.dump(self._wordcount, TableFile)
+        with open(self.path+'/revtokensTable', 'w') as TableFile:
+            pickle.dump(self._revtokens, TableFile)
+        exit()
         return self._tokens
     
     def sentences(self):
@@ -104,7 +117,8 @@ class StanfordSentiment:
         tokens = self.tokens()
         allsentences = [[w for w in s 
             if 0 >= rejectProb[tokens[w]] or random.random() >= rejectProb[tokens[w]]]
-            for s in sentences * 30]
+            for s in sentences * 30]#TODO *30??
+            #minimal log-likelihood value that a token requires to be considered as a frequent sentence starter TODO THIS?
 
         allsentences = [s for s in allsentences if len(s) > 1]
         
@@ -130,10 +144,15 @@ class StanfordSentiment:
         else:
             return self.getRandomContext(C)
 
+    def not_reject(self, w, rejectProb, tokens):
+        return 0 >= rejectProb[tokens[w]] or random.random() >= rejectProb[tokens[w]]
+
     def getContext(self, C=5):
         
         #
-        #with open(self.path + "/file", "r") as f:  
+        #with open(self.path + "/file", "r") as f: 
+        rejectProb = self.rejectProb()
+        tokens = self.tokens()
         paragraph_id = -1
         for dir_name in ["/neg", "/pos", "/unsup"]:
             for filename in os.listdir(self.path + dir_name):         
@@ -147,7 +166,9 @@ class StanfordSentiment:
                             context = splitted[max(0, i - C1):i] 
                             if i+1 < len(splitted):
                                 context += splitted[i+1:min(len(splitted), i + C1 + 1)]
-                            context = [x for x in context if x != w] + [w]
+                            context = [x for x in context if (x != w and self.not_reject(x, rejectProb, tokens))]
+                            if self.not_reject(w, rejectProb, tokens):
+                                 context += [w] 
                             i += 1#yield i? #TODO
                             yield paragraph_id, context
 
@@ -278,7 +299,7 @@ class StanfordSentiment:
         if hasattr(self, '_rejectProb') and self._rejectProb is not None:
             return self._rejectProb
 
-        threshold = 1e-5 * self._wordcount
+        threshold = 1e-2 * self._wordcount#TODO only for skipgram
 
         nTokens = len(self.tokens())
         rejectProb = np.zeros((nTokens,))

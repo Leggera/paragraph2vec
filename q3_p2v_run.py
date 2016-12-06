@@ -19,10 +19,10 @@ nWords = len(tokens)#576482#2771466#1913160188 - not unique
 nParagraphs = 75000#74895585#dataset.numSentences() #TODO
 
 # We are going to train 10-dimensional vectors for this assignment
-dimVectors = 10#100 #TODO
+dimVectors = 150#100 #TODO
 
 # Context size
-C = 5#10 #TODO
+C = 10#10 #TODO
 #word = dataset.getRandomContext(C)
 word = dataset.getContext(C)#can input random(C) inside this function
 it = iter(word)
@@ -38,7 +38,7 @@ print 'e'
 wordVectors0 = sgd(
     lambda vec: word2vec_sgd_wrapper(skipgram, tokens, vec, dataset, C, it, nParagraphs, 
     	negSamplingCostAndGradient), 
-    wordVectors, nParagraphs, 0.3, 40000, None, True, PRINT_EVERY=10)
+    wordVectors, nParagraphs, 0.05, 40000, None, True, PRINT_EVERY=10)
 print "sanity check: cost at convergence should be around or below 10"
 
 # sum the input and output word vectors
