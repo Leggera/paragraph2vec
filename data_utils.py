@@ -9,7 +9,7 @@ import random
 class StanfordSentiment:
     def __init__(self, path=None, tablesize = 1000000):#TODO why 1000000?
         if not path:
-            path = "./paragraph2vec_l"
+            path = "./paragraph2vec"
 
         self.path = path
         self.tablesize = tablesize

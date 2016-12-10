@@ -103,12 +103,15 @@ def sgd(f, x0, dataset, C, N, step, iterations, postprocessing = None, useSaved 
                 x[T, :] -= step * gin.T
                 x = postprocessing(x)
                 iter_ += 1
- 
+
+                if iter_ % 10000 == 0:
+                    print iter_
+
                 if iter_ % ANNEAL_EVERY == 0:
                     step *= 0.5
 
-        print "epoch " + str(epoch) + " of "+ str(iterations)
+        print "epoch " + str(epoch + 1) + " of "+ str(iterations)
     if useSaved:
-        save_params(epoch, x)
+        save_params(epoch + 1, x)
     return x
 

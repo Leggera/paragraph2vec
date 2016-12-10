@@ -96,12 +96,14 @@ def word2vec_sgd_wrapper(word2vecModel, tokens, wordVectors, dataset, it, nParag
     GradOut = np.array([])
     GradOut_target = np.array([])
     T = []
+
     for i in it:
         
         denom = 1
         p_id, context = i
 
         idx_in, gin, gin_target, idx_out, gout, gout_target = word2vecModel(p_id, context, tokens, inputVectors, outputVectors, prev_idx, dataset, word2vecCostAndGradient, w2v = w2v)
+
         count += 1
         if (count < batchsize):
             if ((len(idx_in)) and (len(idx_out))):
