@@ -29,7 +29,7 @@ wordVectors = np.concatenate(((np.random.rand(nParagraphs, dimVectors) - .5) / \
 #TODO inizialization normal distribution centre =0 deviation = 1/10, 1/100
 
 wordVectors0 = sgd(
-    lambda vec, ds, words: word2vec_sgd_wrapper(skipgram, tokens, vec, ds, words, nParagraphs, 
+    lambda vec, ds, words: word2vec_sgd_wrapper(tokens, vec, ds, words, nParagraphs, 
     	negSamplingCostAndGradient), 
     wordVectors, dataset, C, nParagraphs, 0.05, 25, None, True)
 
