@@ -68,8 +68,6 @@ clf = MLPClassifier(hidden_layer_sizes = (50, 2))
 
 clf.fit(X, y)                         
 
-
-print x0[:25000].shape
 p = clf.predict(wordVectors0[:25000])
 
 print "precision"

@@ -79,7 +79,7 @@ def sgd(f, x0, dataset, C, N, step, iterations, postprocessing = None, useSaved 
 
         while True:
             
-            idx_in, gin, idx_out, gout, T, finished = f(x, dataset, it)
+            idx_in, c_sizes, gin, idx_out, gout, T, finished = f(x, dataset, it)
 
             
 
@@ -89,29 +89,36 @@ def sgd(f, x0, dataset, C, N, step, iterations, postprocessing = None, useSaved 
             if (len(idx_in)) and (len(idx_out)):
 
                 if w2v:
-                    h = [i + N for i in idx_out]
+                    count = 0
+
+                    h = idx_in + N
+                    j = 0
+                    for i in c_sizes:
+                        x[h[j : i + j], :] -= step * gout[j : j + i, :]
+                        j = i
+                        
+                    h = idx_out + N
                     try:
-                        x[h, :] -= step * gout[len(idx_in):]
+                        x[h, :] -= step * gout[len(idx_in):, :]
                     except:
-                        print h
-                        print x[h, :].shape
+                        print len(h)
                         print gout.shape
+                        print len(idx_out)
                         exit()
 
-                    h = [i + N for i in idx_in]
-                    x[h, :] -= step * gout[:len(idx_in)]
                 x[T, :] -= step * gin.T
                 x = postprocessing(x)
                 iter_ += 1
 
-                if iter_ % 1000 == 0:
-                    print iter_
                 if iter_ % 10000 == 0:
-                    exit()
+                    print iter_
+
                 if iter_ % ANNEAL_EVERY == 0:
                     step *= 0.5
 
         print "epoch " + str(epoch + 1) + " of "+ str(iterations)
+        save_params(epoch + 1, x)
+        exit()
     if useSaved:
         save_params(epoch + 1, x)
     return x
