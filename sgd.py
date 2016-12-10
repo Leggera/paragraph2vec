@@ -79,7 +79,7 @@ def sgd(f, x0, dataset, C, N, step, iterations, postprocessing = None, useSaved 
 
         while True:
             
-            idx_in, gin, idx_out, gout, gout_target, T, finished = f(x, dataset, it)
+            idx_in, gin, idx_out, gout, T, finished = f(x, dataset, it)
 
             
 
@@ -91,7 +91,7 @@ def sgd(f, x0, dataset, C, N, step, iterations, postprocessing = None, useSaved 
                 if w2v:
                     h = [i + N for i in idx_out]
                     try:
-                        x[h, :] -= step * gout
+                        x[h, :] -= step * gout[len(idx_in):]
                     except:
                         print h
                         print x[h, :].shape
@@ -99,14 +99,15 @@ def sgd(f, x0, dataset, C, N, step, iterations, postprocessing = None, useSaved 
                         exit()
 
                     h = [i + N for i in idx_in]
-                    x[h, :] -= step * gout_target
+                    x[h, :] -= step * gout[:len(idx_in)]
                 x[T, :] -= step * gin.T
                 x = postprocessing(x)
                 iter_ += 1
 
-                if iter_ % 10000 == 0:
+                if iter_ % 1000 == 0:
                     print iter_
-
+                if iter_ % 10000 == 0:
+                    exit()
                 if iter_ % ANNEAL_EVERY == 0:
                     step *= 0.5
 

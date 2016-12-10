@@ -22,26 +22,18 @@ def negSamplingCostAndGradient(predicted, targets, outputVectors, dataset, prev_
         return None
 
     prev_idx += negative_idx
-    target_vectors = outputVectors[targets]
-    U = outputVectors[negative_idx]
-    
-    prod_t = np.dot(target_vectors, predicted)
 
-    sig = sigmoid(prod_t)
-    g = sig - 1
+    A = outputVectors[targets + negative_idx]
+    lll = [1] * C_size + [0] * len(negative_idx)
+    sig_A = sigmoid(np.dot(A, predicted)) - lll
     
-    sig_n =  sigmoid(np.dot(U, predicted))
-
-    h = sig_n * U.T
+    h_A = sig_A * A.T
     
     if w2v:
-        grad = sig_n[:, np.newaxis] * predicted
-        grad_t = g[:, np.newaxis] * predicted
-
+        grad_A =  sig_A[:, np.newaxis] * predicted
     else:
         grad = None
-        grad_t = None
-    return h, g * target_vectors.T, negative_idx, grad, grad_t, targets
+    return h_A, negative_idx, grad_A, targets
 
 def word2vec_sgd_wrapper(tokens, wordVectors, dataset, it, nParagraphs, word2vecCostAndGradient = negSamplingCostAndGradient, w2v = True):   
     prev_idx = []
@@ -54,7 +46,6 @@ def word2vec_sgd_wrapper(tokens, wordVectors, dataset, it, nParagraphs, word2vec
     GradIn = np.array([])
     I_out = np.array([])
     GradOut = np.array([])
-    GradOut_target = np.array([])
     T = []
 
     for i in it:
@@ -64,7 +55,7 @@ def word2vec_sgd_wrapper(tokens, wordVectors, dataset, it, nParagraphs, word2vec
         context_indices = [tokens[w] for w in context]
         res = word2vecCostAndGradient(inputVectors[p_id], context_indices, outputVectors, dataset, prev_idx, w2v = w2v)    
         if res:
-            gin, gin_target, idx_out, gout, gout_target, idx_in = res
+            gin, idx_out, gout, idx_in = res
         else: 
             continue
 
@@ -76,17 +67,16 @@ def word2vec_sgd_wrapper(tokens, wordVectors, dataset, it, nParagraphs, word2vec
                     I_in = idx_in
                     I_out = idx_out
 
-                    GradIn = (np.sum(gin, axis = 1) + np.sum(gin_target, axis = 1)).reshape(-1, 1) / batchsize
+                    GradIn = (np.sum(gin, axis = 1)).reshape(-1, 1) / batchsize
                     if w2v:
                         GradOut = gout
-                        GradOut_target = gout_target
                     T = [p_id]
                 else:
                     I_in = np.concatenate([I_in, idx_in])
                     I_out = np.concatenate([I_out, idx_out])
                     
                     try:
-                        GradIn = np.concatenate([GradIn, (np.sum(gin, axis = 1) + np.sum(gin_target, axis = 1)).reshape(-1, 1) / batchsize], axis = 1)
+                        GradIn = np.concatenate([GradIn, (np.sum(gin, axis = 1)).reshape(-1, 1) / batchsize], axis = 1)
                     except:
                         print idx_in
                         print idx_out
@@ -96,13 +86,12 @@ def word2vec_sgd_wrapper(tokens, wordVectors, dataset, it, nParagraphs, word2vec
                         exit()
                     if w2v:
                         GradOut = np.concatenate([GradOut, gout])
-                        GradOut_target = np.concatenate([GradOut_target, gout_target])
                     T += [p_id]
             else:
                 continue
         else:
-            return I_in, GradIn, I_out, GradOut, GradOut_target, T, False
-    return I_in, GradIn, I_out, GradOut, GradOut_target, T, True
+            return I_in, GradIn, I_out, GradOut, T, False
+    return I_in, GradIn, I_out, GradOut, T, True
 
 if __name__ == "__main__":
 
