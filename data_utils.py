@@ -17,7 +17,7 @@ class StanfordSentiment:
     def tokens(self):
         if hasattr(self, "_tokens") and self._tokens:
             return self._tokens
-        '''with open(self.path+ "/tokensTable", "r") as TableFile:
+        with open(self.path+ "/tokensTable", "r") as TableFile:
             self._tokens = pickle.load(TableFile)
         with open(self.path+'/tokensFreqTable', 'r') as TableFile:
             self._tokenfreq = pickle.load(TableFile)
@@ -25,7 +25,7 @@ class StanfordSentiment:
             self._wordcount = pickle.load(TableFile)
         with open(self.path+'/revtokensTable', 'r') as TableFile:
             self._revtokens = pickle.load(TableFile)
-        return self._tokens'''
+        return self._tokens
         tokens = dict()
         tokenfreq = dict()
         wordcount = 0
@@ -53,14 +53,14 @@ class StanfordSentiment:
         self._tokenfreq = tokenfreq
         self._wordcount = wordcount
         self._revtokens = revtokens
-        '''with open(self.path+'/tokensTable', 'w') as TableFile:
+        with open(self.path+'/tokensTable', 'w') as TableFile:
             pickle.dump(self._tokens, TableFile)
         with open(self.path+'/tokensFreqTable', 'w') as TableFile:
             pickle.dump(self._tokenfreq, TableFile)
         with open(self.path+'/wordCountTable', 'w') as TableFile:
             pickle.dump(self._wordcount, TableFile)
         with open(self.path+'/revtokensTable', 'w') as TableFile:
-            pickle.dump(self._revtokens, TableFile)'''
+            pickle.dump(self._revtokens, TableFile)
         return self._tokens
 
     def not_reject(self, w, rejectProb, tokens):
@@ -114,9 +114,9 @@ class StanfordSentiment:
     def sampleTable(self):
         if hasattr(self, '_sampleTable') and self._sampleTable is not None:
             return self._sampleTable
-        '''with open(self.path+'/sampleTable', "r") as TableFile:
+        with open(self.path+'/sampleTable', "r") as TableFile:
             self._sampleTable = pickle.load(TableFile)
-        return self._sampleTable'''
+        return self._sampleTable
         nTokens = len(self.tokens())
         samplingFreq = np.zeros((nTokens,))
         i = 0
@@ -134,7 +134,7 @@ class StanfordSentiment:
         samplingFreq /= np.sum(samplingFreq)
         samplingFreq = np.cumsum(samplingFreq) * self.tablesize
 
-        self._sampleTable = [0] * self.tablesize
+        self._sampleTable = np.asarray([0] * self.tablesize)
 
         j = 0
         
@@ -142,8 +142,8 @@ class StanfordSentiment:
             while i > samplingFreq[j]:
                 j += 1
             self._sampleTable[i] = j
-        '''with open(self.path+'/sampleTable', 'w') as TableFile:
-            pickle.dump(self._sampleTable, TableFile)'''
+        with open(self.path+'/sampleTable', 'w') as TableFile:
+            pickle.dump(self._sampleTable, TableFile)
         return self._sampleTable
 
     def rejectProb(self):
@@ -163,6 +163,7 @@ class StanfordSentiment:
         self._rejectProb = rejectProb
         return self._rejectProb
 
-    def sampleTokenIdx(self):
-        return self.sampleTable()[random.randint(0, self.tablesize - 1)]
+    def sampleTokenIdx(self, K):
+        l = np.random.randint(0, high = self.tablesize, size = K)#TODO why -1?
+        return self.sampleTable()[l]
 
