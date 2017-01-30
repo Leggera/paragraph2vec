@@ -52,15 +52,15 @@ def sgd(f, x0, dataset, C, N, step, iterations, postprocessing = None, useSaved 
     ANNEAL_EVERY = 20000
     
     if useSaved:
-        start_iter, oldx, state = load_saved_params()
-        if start_iter > 0:
+        start_epoch, oldx, state = load_saved_params()
+        if start_epoch > 0:
             x0 = oldx;
-            step *= 0.5 ** (start_iter / ANNEAL_EVERY)
+            step *= 0.5 ** (start_epoch * 75000 / ANNEAL_EVERY)
             
         if state:
             random.setstate(state)
     else:
-        start_iter = 0
+        start_epoch = 0
     
     x = x0
     
@@ -70,7 +70,7 @@ def sgd(f, x0, dataset, C, N, step, iterations, postprocessing = None, useSaved 
     expcost = None
     
     iter_ = 0
-    for epoch in range(iterations):
+    for epoch in range(start_epoch, iterations):
         if w2v:
             word = dataset.getContext(C)
         else:
@@ -79,7 +79,7 @@ def sgd(f, x0, dataset, C, N, step, iterations, postprocessing = None, useSaved 
 
         while True:
             
-            idx_in, c_sizes, gin, idx_out, gout, T, finished = f(x, dataset, it)
+            idx_in, gin, idx_out, gout, T, finished = f(x, dataset, it)
 
             
 
@@ -89,24 +89,22 @@ def sgd(f, x0, dataset, C, N, step, iterations, postprocessing = None, useSaved 
             if (len(idx_in)) and (len(idx_out)):
 
                 if w2v:
-                    count = 0
-
-                    h = idx_in + N
-                    j = 0
-                    for i in c_sizes:
-                        x[h[j : i + j], :] -= step * gout[j : j + i, :]
-                        j = i
-                        
                     h = idx_out + N
                     try:
-                        x[h, :] -= step * gout[len(idx_in):, :]
+                        x[h, :] -= step * gout[len(idx_in):]
                     except:
-                        print len(h)
+                        print h
+                        print x[h, :].shape
                         print gout.shape
-                        print len(idx_out)
                         exit()
 
-                x[T, :] -= step * gin.T
+                    h = idx_in + N
+                    x[h, :] -= step * gout[:len(idx_in)]
+                cs = 0
+                for s in T:
+                    x[s, :] -= step * gin[:, cs].T
+                    cs += 1
+
                 x = postprocessing(x)
                 iter_ += 1
 
@@ -115,10 +113,7 @@ def sgd(f, x0, dataset, C, N, step, iterations, postprocessing = None, useSaved 
 
                 if iter_ % ANNEAL_EVERY == 0:
                     step *= 0.5
-
         print "epoch " + str(epoch + 1) + " of "+ str(iterations)
-        save_params(epoch + 1, x)
-        exit()
     if useSaved:
         save_params(epoch + 1, x)
     return x

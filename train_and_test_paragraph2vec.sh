@@ -18,31 +18,35 @@ normalize_text() {
 
 mkdir paragraph2vec
 cd paragraph2vec
+if [ ! -f  data_p2v.txt ]
+then
+    wget http://ai.stanford.edu/~amaas//data/sentiment/aclImdb_v1.tar.gz
+    tar -xvf aclImdb_v1.tar.gz
 
-wget http://ai.stanford.edu/~amaas//data/sentiment/aclImdb_v1.tar.gz
-tar -xvf aclImdb_v1.tar.gz
-
-for i in `ls aclImdb/train/neg`; do
-    normalize_text < aclImdb/train/neg/$i >> data_p2v.txt
-done
-for i in `ls aclImdb/train/pos`; do
-    normalize_text < aclImdb/train/pos/$i >> data_p2v.txt
-done
-for i in `ls aclImdb/train/unsup`; do
-    normalize_text < aclImdb/train/unsup/$i >> data_p2v.txt
-done
-
+    for i in `ls aclImdb/train/neg`; do
+	normalize_text < aclImdb/train/neg/$i >> data_p2v.txt
+    done
+    for i in `ls aclImdb/train/pos`; do
+	normalize_text < aclImdb/train/pos/$i >> data_p2v.txt
+    done
+    for i in `ls aclImdb/train/unsup`; do
+	normalize_text < aclImdb/train/unsup/$i >> data_p2v.txt
+    done
+fi
 cd ../
 
 python2 run.py
 cd paragraph2vec
-for i in `ls aclImdb/test/neg`; do
-    normalize_text < aclImdb/test/neg/$i >> test_data_p2v.txt
-done
+if [ ! -f  test_data_p2v.txt ]
+then
+    for i in `ls aclImdb/test/neg`; do
+	normalize_text < aclImdb/test/neg/$i >> test_data_p2v.txt
+    done
 
-for i in `ls aclImdb/test/pos`; do
-    normalize_text < aclImdb/test/pos/$i >> test_data_p2v.txt
-done
+    for i in `ls aclImdb/test/pos`; do
+	normalize_text < aclImdb/test/pos/$i >> test_data_p2v.txt
+    done
+fi
 
 cd ../
 

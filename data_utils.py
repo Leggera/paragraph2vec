@@ -33,7 +33,7 @@ class StanfordSentiment:
         idx = 0        
         with open(self.path + "/data_p2v.txt", "r") as f:
             for line in f:
-                splitted = line.strip().split()[1:]
+                splitted = line.strip().split()
                 for w in splitted:
                     wordcount += 1
                     if not w in tokens:
@@ -51,7 +51,7 @@ class StanfordSentiment:
 
         self._tokens = tokens
         self._tokenfreq = tokenfreq
-        self._wordcount = wordcount        
+        self._wordcount = wordcount
         self._revtokens = revtokens
         '''with open(self.path+'/tokensTable', 'w') as TableFile:
             pickle.dump(self._tokens, TableFile)
@@ -61,7 +61,6 @@ class StanfordSentiment:
             pickle.dump(self._wordcount, TableFile)
         with open(self.path+'/revtokensTable', 'w') as TableFile:
             pickle.dump(self._revtokens, TableFile)'''
-        
         return self._tokens
 
     def not_reject(self, w, rejectProb, tokens):
@@ -77,47 +76,40 @@ class StanfordSentiment:
         paragraph_id = -1
         with open(self.path + "/data_p2v.txt", "r") as f: 
             for line in f:
-                Contexts = []
-                c_sizes = []
-                paragraph_id += 1
+                paragraph_id += 1                
                 i = 0
-                splitted = line.strip().split()[1:]
+                splitted = line.strip().split()
                 for w in splitted:  
-                    C1 = random.randint(1, C)#TODO Ok?
-                    context = splitted[max(0, i - C1):i]
+                    C1 = random.randint(1, C)
+                    context = splitted[max(0, i - C1):i] 
                     if i+1 < len(splitted):
                         context += splitted[i+1:min(len(splitted), i + C1 + 1)]
-                    context = [tokens[x] for x in context if (x != w and self.not_reject(x, rejectProb, tokens))]
+                    context = [x for x in context if (x != w and self.not_reject(x, rejectProb, tokens))]
                     if self.not_reject(w, rejectProb, tokens):
-                         context += [tokens[w]] 
+                         context += [w] 
                     i += 1
-                    Contexts += context
-                    c_sizes += [len(context)]
-                yield paragraph_id, np.asarray(Contexts), c_sizes
+                    yield paragraph_id, np.asarray(context)
 
     def getTestContext(self, C=5):
+        
         rejectProb = self.rejectProb()
         tokens = self.tokens()
         paragraph_id = -1
         with open(self.path + "/test_data_p2v.txt", "r") as f: 
             for line in f:
-                Contexts = []
-                c_sizes = []
-                paragraph_id += 1
+                paragraph_id += 1                
                 i = 0
-                splitted = line.strip().split()[1:]
-                for w in splitted:
-                    C1 = random.randint(1, C)  
+                splitted = line.strip().split()
+                for w in splitted:  
+                    C1 = random.randint(1, C)
                     context = splitted[max(0, i - C1):i] 
                     if i+1 < len(splitted):
                         context += splitted[i+1:min(len(splitted), i + C1 + 1)]
-                    context = [tokens[x] for x in context if (x != w and self.not_reject(x, rejectProb, tokens))]#TODO
+                    context = [x for x in context if (x != w and self.not_reject(x, rejectProb, tokens))]
                     if self.not_reject(w, rejectProb, tokens):
-                         context += [tokens[w]] 
+                         context += [w] 
                     i += 1
-                    Contexts += context
-                    c_sizes += [len(context)]
-                yield paragraph_id, np.asarray(Contexts), c_sizes
+                    yield paragraph_id, np.asarray(context)
 
     def sampleTable(self):
         if hasattr(self, '_sampleTable') and self._sampleTable is not None:
@@ -172,6 +164,6 @@ class StanfordSentiment:
         return self._rejectProb
 
     def sampleTokenIdx(self, K):
-        l = random.sample(xrange(0, self.tablesize), K)#TODO why was -1?
+        l = random.sample(xrange(0, self.tablesize), K)#TODO why -1?
         return self.sampleTable()[l]
 
